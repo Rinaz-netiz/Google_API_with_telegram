@@ -81,7 +81,3 @@ def create_chat_and_add_users_telegram(chat_title: str, people_nums: list) -> No
             break
     else:
         _create_chat(name_chat=chat_title, people_numbers=people_nums)
-
-
-if __name__ == '__main__':
-    create_chat_and_add_users_telegram(chat_title='Тест группа', people_nums=['@Itjget'])  # @Itjget  '@Rinaz0', '@Ilnaz268'

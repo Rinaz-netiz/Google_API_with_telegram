@@ -15,20 +15,6 @@ load_env()
 CLIENT_SECRET_FILE = os.getenv('CLIENT_SECRET_FILE_CONTACT')
 SCOPES_CONTACTS = ['https://www.googleapis.com/auth/contacts']
 
-"""[
-            {
-                'type': 'first_number',
-                'value': number[0],
-            },
-            {
-                'type': 'second_number',
-                'value': number[1],
-            }
-        ]
-        
-Пример получаемого списка: {'name': name, 'numbers': [{'number': '+7987219', 'value': 'first contact'}, {'number': '+7987219', 'value': 'second contact'}]}
-        """
-
 
 def _connection_test():
     """Проверяет токен подключение, при первом подключении создает файл подключения"""
@@ -92,7 +78,6 @@ def _create_contacts(names_and_numbers: list) -> None:
 
 
 def preparation_contact(name_and_numbers: dict) -> Dict:
-    # {'name': name, 'numbers': [{'type': 'first contact', 'value': '+7987219'}, {'type': 'second contact', 'value': '+7987219'}]}
     return {
             "contactPerson": {
                 'names': [{
@@ -130,11 +115,3 @@ def create_contact(name: str, number: [list, str]) -> None:
 
     }).execute()
     print('Контакт создан')
-
-
-if __name__ == '__main__':
-    # create_contact(name='API', number=['67997', '988456'])
-    a = [{'name': 'Bob_test', 'numbers': [{'type': 'first contact', 'value': '+7987219'}, {'type': 'second contact', 'value': '+7987219'}]},
-         {'name': 'Ivan_test', 'numbers': [{'type': 'first contact', 'value': '+7987219'}, {'type': 'second contact', 'value': '+7987219'}]}]
-    create_batch_contacts(names_and_numbers=a)
-    # pprint(preparation_contact({'name': 'Alex', 'numbers': [{'type': 'first contact', 'value': '+7987219'}, {'type': 'second contact', 'value': '+7987219'}]}))

@@ -31,15 +31,3 @@ def get_values(start: str, end: str, spreadsheetId: str) -> List:
     pprint(values)
     # pprint(values)
     return values['values']
-
-
-if __name__ == '__main__':
-     # Имя файла с закрытым ключом, вы должны подставить свое
-    spreadsheetId = os.getenv('SPREAD_SHEET_ID')
-
-    get_values('a1', 'e18', spreadsheetId)
-
-# with open('data.json', 'w', encoding='utf-8') as file:
-#     json.dump(values['values'], file, ensure_ascii=False, indent=4)
-
-
