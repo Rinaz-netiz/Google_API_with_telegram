@@ -11,7 +11,7 @@ load_env()
 api_id = os.getenv('API_ID_TELEGRAM')
 api_hash = os.getenv('API_HASH_TELEGRAM')
 
-client = TelegramClient(session='name', api_id=19230470, api_hash='2428aa616f79b382f8a4e5d285d5183e')
+client = TelegramClient(session='name', api_id=api_id, api_hash=api_hash)
 
 
 def connect_to_client(func):
@@ -30,8 +30,8 @@ def _create_chat(name_chat: str, people_numbers: list) -> None:
     """Функция создает группу в telegarm"""
     users_to_chat = []
     for number in people_numbers:
-        participant = client.get_entity(number)
-        users_to_chat.append(InputUser(user_id=participant.id, access_hash=participant.access_hash))
+        participant = client.get_entity(number).to_dict()
+        users_to_chat.append(InputUser(user_id=participant['id'], access_hash=participant['access_hash']))
 
     # Создает чат
     client(functions.messages.CreateChatRequest(
