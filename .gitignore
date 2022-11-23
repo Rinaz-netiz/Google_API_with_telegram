@@ -158,6 +158,7 @@ backup
 credentials
 photo
 *.json
+tests.py
 
 
 # PyCharm
