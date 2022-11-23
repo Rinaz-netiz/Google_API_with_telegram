@@ -1,8 +1,5 @@
-from __future__ import print_function
 import os
-from pprint import pprint
 from typing import Dict
-
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build

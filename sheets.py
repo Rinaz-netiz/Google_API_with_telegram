@@ -1,7 +1,5 @@
 import json
-from pprint import pprint
 from typing import List
-from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 import httplib2
@@ -13,11 +11,6 @@ load_env()
 CREDENTIALS_FILE = os.getenv('CREDENTIALS_FILE_SHEETS')
 SCOPES_SHEETS = ['https://www.googleapis.com/auth/spreadsheets',
                  'https://www.googleapis.com/auth/drive']
-
-
-# 1HAIqVe2JDdQqw2Q7aWp1qzzM5d-YiD84ijbdCMYT9Qg - for work
-# 1UxB9JRUf2Yar3fElc0Pbh6THK_Zp6W-AIMr1fnMC4mQ - for test
-# 1LBtslCJOdLCIDr8Cd2U1atAncJpsOhL4koP270-twTk - for test2
 
 
 def _connect_to_sheets():
@@ -126,31 +119,4 @@ def sorted_data_from_sheets(data):
             school_number_and_phones[i["sorted_for_school_week_hours"]].append(i['numbers'][-1])
         else:
             school_number_and_phones[i["sorted_for_school_week_hours"]].append(i['numbers'])
-    # print(school_number_and_phones.items())
     return school_number_and_phones.items()
-
-
-def main():
-    with open('test.json', encoding='utf-8') as file:
-        con = file.read()
-        import json
-        content = json.loads(con)
-    data_in_sheets = []
-    for data in content:
-        school = data[1].split(' ')[0]
-        if school == 'Клуб':
-            school = data[1].split('(')[-1].replace(')', '')
-        name = data[2]
-        class_at_school = data[3] + data[4]
-        numbers = [data[5]]
-        if data[6] != '':
-            numbers.append(data[6])
-
-        data_in_sheets.append({
-            'school': school,
-            'name': name,
-            'class_at_school': class_at_school,
-            'numbers': numbers
-        })
-    pprint(data_in_sheets)
-
