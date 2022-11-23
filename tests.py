@@ -23,10 +23,10 @@ def run_multiple_times(data_in_list: list):
 
 
 
-a = [i for i in range(401)]
+# a = [i for i in range(401)]
 
 
-def main(a):
+# def main(a):
     if 200 in a:
         print(f'его длинна {len(a)} и 200 в списке Из main {a}')
     else:
@@ -34,9 +34,22 @@ def main(a):
     print()
 
 
-run_multiple_times(a)
+# run_multiple_times(a)
+
+import schedule
 
 
 
+
+
+
+def job():
+    print('AAAAA')
+
+schedule.every(10).seconds.do(job)
+
+
+while True:
+    schedule.run_pending()
 
 

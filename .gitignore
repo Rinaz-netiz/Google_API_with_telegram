@@ -156,6 +156,8 @@ cython_debug/
 *.session
 backup
 credentials
+photo
+*.json
 
 
 # PyCharm

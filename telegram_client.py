@@ -1,7 +1,9 @@
+import datetime
+
 from telethon.sync import TelegramClient
 from telethon import functions
 from functools import wraps
-
+from telethon.errors.rpcerrorlist import UserAlreadyParticipantError, UserPrivacyRestrictedError
 from telethon.tl.types import InputUser
 import os
 from main import load_env
@@ -26,10 +28,10 @@ def connect_to_client(func):
 
 
 @connect_to_client
-def _create_chat(name_chat: str, people_numbers: list) -> None:
+def _create_chat(name_chat: str, users_numbers: list) -> None:
     """Функция создает группу в telegarm"""
     users_to_chat = []
-    for number in people_numbers:
+    for number in users_numbers:
         participant = client.get_entity(number).to_dict()
         users_to_chat.append(InputUser(user_id=participant['id'], access_hash=participant['access_hash']))
 
@@ -39,18 +41,27 @@ def _create_chat(name_chat: str, people_numbers: list) -> None:
         title=name_chat
     ))
 
+    # Добавление в чат фото
+    chat_id = client.get_entity(name_chat).to_dict()['id']
+    if not '_' == 'Chat':
+        for chat in _get_chats_data():
+            if chat['title'] == name_chat:
+                chat_id = chat['chat_id']
+    photo_load = client.upload_file('./photo/long_dark.jpg')
+    client(functions.messages.EditChatPhotoRequest(
+        chat_id=chat_id,
+        photo=photo_load  # Фото, устанавливаемая в чат
+    ))
+
     print(f'Chat "{name_chat}" created')
 
 
 @connect_to_client
-def _add_user_to_chat(participant_number: str, name_chat: str) -> None:
+def _add_user_to_chat(chat_id: int, user_number: str) -> None:
     """Добавляет пользователя в чат"""
-    participant_info = client.get_entity(participant_number).to_dict()
-    chat_id = client.get_entity(name_chat).to_dict()
-
-    client(functions.messages.AddChatUserRequest(chat_id=chat_id['id'], user_id=participant_info['id'],
+    participant_info = client.get_entity(user_number)
+    client(functions.messages.AddChatUserRequest(chat_id=chat_id, user_id=participant_info.id,
                                                  fwd_limit=10))  # fwd_limit кол-во сообщений видных пользователю при входе
-    print(f'{participant_number} user added in "{name_chat}" chat')
 
 
 def _get_chats_data():
@@ -58,26 +69,47 @@ def _get_chats_data():
     all_chats = client(functions.messages.GetAllChatsRequest(except_ids=[]))
     for dialog in all_chats.chats:
         chat = dialog.to_dict()
-        if chat['_'] == 'Chat' and chat['creator'] and chat['participants_count'] < 10:
-            yield chat['title']
+        if chat['_'] == 'Chat' and chat['creator']:
+            yield {'title': chat['title'], 'chat_id': chat['id']}
 
 
 @connect_to_client
-def create_chat_and_add_users_telegram(chat_title: str, people_nums: list) -> None:
+def create_chat_and_add_users_telegram(chat_title: str, users_numbers: list) -> None:
     """Функция добавляет в чат, если чат с таким именем существует или создает его"""
     for chat in _get_chats_data():
-        if chat == chat_title:
-            for people in people_nums:
-                from telethon.errors.rpcerrorlist import UserAlreadyParticipantError
+        if chat['title'] == chat_title:
+            for user in users_numbers:
                 try:
-                    _add_user_to_chat(participant_number=people, name_chat=chat)
+                    _add_user_to_chat(chat_id=chat['chat_id'], user_number=user)
+                    print(f'{user} user added in "{chat["title"]}" chat')
                 except UserAlreadyParticipantError:
-                    print(f'User: {people} already in the chat: {chat}')
+                    print(f'User: {user} already in the chat: {chat["title"]}')
+                except UserPrivacyRestrictedError:
+                    _create_invite_link(chat_id=chat['chat_id'], user_number=user)
                 except Exception:
                     import traceback
-                    client.send_message('me', f'{traceback.format_exc()} \n\n'
-                                              f'number: {people} \nchat: {chat} ')
-                    print(f'Number: {people} chat: {chat} \nNot added!!!', end='\n')
+                    client.send_message('@Rinaz0', f'{traceback.format_exc()} \n\n'
+                                                   f'number: {user} \nchat: {chat} ')
+                    client.send_message('me', f'number: {user} \nchat: {chat}')
+
+                    print(f'Number: {user} chat: {chat["title"]} \nNot added!!!', end='\n')
             break
     else:
-        _create_chat(name_chat=chat_title, people_numbers=people_nums)
+        _create_chat(name_chat=chat_title, users_numbers=users_numbers)
+
+
+@connect_to_client
+def _create_invite_link(chat_id, user_number: str) -> None:
+    """Функция принемают id чата и создает инвайт сообщение"""
+    today = str(datetime.date.today())
+    invite_live = int(today[-2:].replace('0', '')) + 3
+    invite_ink = client(functions.messages.ExportChatInviteRequest(
+        peer=chat_id,
+        legacy_revoke_permanent=None,
+        request_needed=None,
+        expire_date=datetime.datetime(2022, 11, invite_live, 0, 0, 0),
+        usage_limit=50,
+        title='My awesome title'
+    ))
+    client.send_message(user_number,
+                        f'Мы не можем вас добавить в группу, поэтому вот ссылка: \n{invite_ink.link}')  # Лучше поменять сообщение
