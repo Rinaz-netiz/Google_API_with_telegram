@@ -5,10 +5,12 @@ google contacts и параллельно создавать группы в т�
 1) Создать .env файл и поместить туда следующее:
     # Ключи telegram_client
     API_ID_TELEGRAM=  --api_id телеграма
+    
     API_HASH_TELEGRAM=  --api_hash телеграма
 
     # Ключи sheets
     SPREAD_SHEET_ID=  -- здесь должен быть id google sheets
+    
     CREDENTIALS_FILE_SHEETS=  --ключи от google в .json
 
     # Ключи create_contact
