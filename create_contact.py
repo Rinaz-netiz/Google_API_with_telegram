@@ -12,7 +12,7 @@ CLIENT_SECRET_FILE = os.getenv('CLIENT_SECRET_FILE_CONTACT')
 SCOPES_CONTACTS = ['https://www.googleapis.com/auth/contacts']
 
 
-def _connect_to_people_api():
+def _connect_to_people_api() -> build:
     """Подключение к API"""
     """Проверяет токен подключение, при первом подключении создает файл подключения"""
     creds = None
@@ -36,7 +36,10 @@ def _connect_to_people_api():
 
 def create_batch_contacts(names_and_numbers: list) -> None:
     """Отправляет контакты все за нескоько запросов"""
-    _run_multiple_times(data_in_list=names_and_numbers)
+    try:
+        _run_multiple_times(data_in_list=names_and_numbers)
+    except Exception as ex:
+        print(f'\nNo contacts {ex}\n')
 
 
 def _run_multiple_times(data_in_list: list) -> None:

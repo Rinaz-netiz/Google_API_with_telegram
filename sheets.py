@@ -1,4 +1,5 @@
 import json
+
 from typing import List
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
@@ -13,7 +14,7 @@ SCOPES_SHEETS = ['https://www.googleapis.com/auth/spreadsheets',
                  'https://www.googleapis.com/auth/drive']
 
 
-def _connect_to_sheets():
+def _connect_to_sheets() -> build:
     cred = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE, SCOPES_SHEETS)
     httpAuth = cred.authorize(httplib2.Http())
     return build('sheets', 'v4', http=httpAuth)  # Выбираем работу с таблицами и 4 версию API
@@ -91,8 +92,18 @@ def _clean_data(content: list) -> List:
         numbers = number
 
         ###########################
-        week_days = data[9]
-        hours = data[10]
+        days_and_time = set()
+        try:
+            for cell in range(8, 39):
+                if data[cell] != '':
+                    days_and_time.add(data[cell])
+        except IndexError:
+            pass
+
+        if len(days_and_time) == 1:
+            days_and_time = ''.join(days_and_time)
+            if ', ' in days_and_time:
+                days_and_time = days_and_time.split(', ')
         ###########################
 
         data_in_sheets.append({
@@ -100,8 +111,9 @@ def _clean_data(content: list) -> List:
             'name': name,
             'class_at_school': class_at_school,
             'numbers': numbers,
-            'sorted_for_school_week_hours': f'№{school} {week_days} {hours}'
+            'sorted_for_school_week_hours': days_and_time
         })
+
     return data_in_sheets
 
 
@@ -111,12 +123,26 @@ def sheets_get_data(start: str, end: str, spreadsheetId: str) -> List:
     return _clean_data(content=data)
 
 
-def sorted_data_from_sheets(data):
+def sorted_data_from_sheets(data) -> List:
     """Функция сортирует данные и собирает их в список"""
-    school_number_and_phones = defaultdict(list)
+    school_number_and_phones_only = defaultdict(list)
+    few_days = []
     for i in data:
-        if isinstance(i['numbers'], list):
-            school_number_and_phones[i["sorted_for_school_week_hours"]].append(i['numbers'][-1])
+        if isinstance(i['sorted_for_school_week_hours'], str):
+            if isinstance(i['numbers'], list):
+                school_number_and_phones_only[i["sorted_for_school_week_hours"]].append(i['numbers'][-1])
+            else:
+                school_number_and_phones_only[i["sorted_for_school_week_hours"]].append(i['numbers'])
         else:
-            school_number_and_phones[i["sorted_for_school_week_hours"]].append(i['numbers'])
-    return school_number_and_phones.items()
+            if isinstance(i['numbers'], list):
+                num = i['numbers'][-1]
+            else:
+                num = i['numbers']
+            few_days.append((list(i['sorted_for_school_week_hours']), num))
+
+    ready_data = []
+    for i in (school_number_and_phones_only.items(), few_days):
+        for k in i:
+            ready_data.append(k)
+
+    return ready_data
