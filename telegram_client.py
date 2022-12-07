@@ -80,9 +80,10 @@ def _add_user_to_chat(chat_id: int, chat_title: str, user_number: str) -> None:
         try:
             client(functions.messages.AddChatUserRequest(chat_id=chat_id, user_id=participant_info.id,
                                                          fwd_limit=10))  # fwd_limit кол-во сообщений видных пользователю при входе
-            print(f'{user_number} user added in "{chat_title}" chat')
+            # print(f'{user_number} user added in "{chat_title}" chat')
         except UserAlreadyParticipantError:
-            print(f'User: {user_number} already in the chat: {chat_title}')
+            pass
+            # print(f'User: {user_number} already in the chat: {chat_title}')
         except UserPrivacyRestrictedError:
             _create_invite_link(chat_id=chat_id, chat_title=chat_title, user_number=user_number)
         except Exception:
@@ -98,7 +99,7 @@ def _get_chats_data(chat_title=None) -> dict:
         for dialog in all_chats.chats:
             chat = dialog.to_dict()
             if chat['_'] == 'Chat' and chat['creator']:
-                chats_data[chat['title']] = {'chat_id': chat['id'], 'participants_count': chat['participants_count']}  # [0] - chat_id, [1] - participants_count
+                chats_data[chat['title']] = {'chat_id': chat['id'], 'participants_count': chat['participants_count']}
         return chats_data
     else:
         for dialog in all_chats.chats:
@@ -110,9 +111,6 @@ def _get_chats_data(chat_title=None) -> dict:
 @connect_to_client
 def telegram_routing(data) -> None:
     """Вся логика происходит тут"""
-    # client.start()
-    # client.connect()
-
     chat_data = {} | _get_chats_data()
 
     for information in data:
@@ -139,14 +137,9 @@ def telegram_routing(data) -> None:
             try:
                 minn = min(chats.keys())
             except ValueError:
-                try:
-                    client.send_message('me', f'User: {information[1]} do not add to {information[0]} (min() arg is an empty sequence)')
-                except ConnectionError:
-                    print(f'User: {information[1]} do not add to {information[0]} (min() arg is an empty sequence)')
+                client.send_message('me', f'User: {information[1]} do not add to {information[0]} (min() arg is an empty sequence)')
             else:
-                # print(f'chat_id={chats[minn][0]}, chat_title={chats[minn][1]}, user_number={information[1]}')
                 _add_user_to_chat(chat_id=chats[minn][0], chat_title=chats[minn][1], user_number=information[1])
-                # print(chat_data[chats[minn][1]])
                 chat_data[chats[minn][1]]['participants_count'] += 1
 
         for k, v in chat_data.items():
@@ -154,7 +147,6 @@ def telegram_routing(data) -> None:
                 client.send_message('me', f'"{k}" chat is full (participants_count={v["participants_count"]})')
 
     client.send_message('Rinaz0', f'Success(day: {datetime.date.today()})')
-    # client.disconnect()
     print(datetime.date.today(), end='\n\n')
 
 
