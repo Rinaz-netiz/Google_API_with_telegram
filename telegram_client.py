@@ -80,10 +80,8 @@ def _add_user_to_chat(chat_id: int, chat_title: str, user_number: str) -> None:
         try:
             client(functions.messages.AddChatUserRequest(chat_id=chat_id, user_id=participant_info.id,
                                                          fwd_limit=10))  # fwd_limit кол-во сообщений видных пользователю при входе
-            # print(f'{user_number} user added in "{chat_title}" chat')
         except UserAlreadyParticipantError:
             pass
-            # print(f'User: {user_number} already in the chat: {chat_title}')
         except UserPrivacyRestrictedError:
             _create_invite_link(chat_id=chat_id, chat_title=chat_title, user_number=user_number)
         except Exception:
@@ -186,5 +184,3 @@ def send_traceback(user_number: str, chat_title: str) -> None:
         client.send_message('me', f'number: {user_number} \nchat: {chat_title}')
     except ConnectionError:
         pass
-
-    # print(f'Number: {user_number} chat: {chat_title} \nNot added!!!', end='\n')
